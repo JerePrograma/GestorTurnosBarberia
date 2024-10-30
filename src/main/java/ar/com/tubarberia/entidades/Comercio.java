@@ -66,5 +66,4 @@ public class Comercio {
     private Double calificacionPromedio;
 
     private String politicasCancelacion;
-
 }
