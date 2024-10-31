@@ -10,25 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comercio {
+public class Comercio extends Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(unique = true, nullable = false)
+    private String CUIT;
 
-    private String nombre;
+    private String localidad;
 
-    private String direccion;
-
-    private String telefono;
-
-    private String email;
-
-    private String cuit;
+    private String barrio;
 
     private LocalTime horarioApertura;
 
@@ -45,18 +39,11 @@ public class Comercio {
     @ElementCollection
     private List<String> especialidades;
 
-    @OneToMany(mappedBy = "comercio")
+    @OneToMany
     private List<Empleado> empleados;
 
-    @OneToMany(mappedBy = "comercio")
+    @OneToMany
     private List<Turno> turnos;
-
-    private Boolean activo = true;
-
-    @Temporal(TemporalType.DATE)
-    private Date fechaRegistro;
-
-    private String ubicacion;
 
     private String sitioWeb;
 

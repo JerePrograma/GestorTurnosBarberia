@@ -6,10 +6,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Data
@@ -18,12 +16,12 @@ import java.util.List;
 public class Turno {
     @Id
     @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
     private String titulo;
 
     @ManyToOne
+    @JoinColumn(name = "comercio_id")
     private Comercio comercio;
 
     @ManyToOne
@@ -31,10 +29,8 @@ public class Turno {
 
     private String descripcion;
 
-    @Temporal(TemporalType.DATE)
     private Date fechaCreacion;
 
-    @Temporal(TemporalType.DATE)
     private Date fechaActualizacion;
 
     @OneToOne
