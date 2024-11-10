@@ -1,7 +1,9 @@
 package ar.com.tubarberia.controlador;
 
+import ar.com.tubarberia.entidades.Usuario;
 import ar.com.tubarberia.excepciones.MiExcepcion;
 import ar.com.tubarberia.servicios.UsuarioServicio;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -26,52 +28,52 @@ public class PortalControlador {
         return "index.html";
     }
 
-    @GetMapping("/registrarCliente")
+    @GetMapping("/registrar-cliente")
     public String registrarCliente() {
-        return "formularioCliente.html";
+        return "cliente-form.html";
     }
 
-    @PostMapping("/registroCliente")
-    public String registrarClientePost(@RequestParam String nombre,
-                                       @RequestParam String direccion,
-                                       @RequestParam String telefono,
-                                       @RequestParam String email,
-                                       @RequestParam String password,
-                                       @RequestParam String password2,
-                                       MultipartFile archivo,
-                                       ModelMap modelo) throws MiExcepcion, DataIntegrityViolationException, Exception {
+    @PostMapping("/registro-cliente")
+    public String registrarCliente(@RequestParam String nombre,
+                                   @RequestParam String direccion,
+                                   @RequestParam String telefono,
+                                   @RequestParam String email,
+                                   @RequestParam String password,
+                                   @RequestParam String password2,
+//                                   MultipartFile archivo,
+                                   ModelMap modelo) throws MiExcepcion, DataIntegrityViolationException, Exception {
         try {
 //            // Verificar si el cliente ya está registrado con el email
 //            if (usuarioServicio.existeClientePorEmail(email)) {
 //                modelo.put("error", "El email ya está registrado.");
-//                return "formularioCliente.html";
+//                return "cliente-form.html";
 //            }
 //
 //            // Verificar si el cliente ya está registrado con el DNI
 //            if (usuarioServicio.existeClientePorDni(dni)) {
 //                modelo.put("error", "El DNI ya está registrado.");
-//                return "formularioCliente.html";
+//                return "cliente-form.html";
 //            }
 
             // Crear el cliente si no está registrado
-            usuarioServicio.crearUsuario(nombre, direccion, telefono, email, password, password2, archivo);
+            usuarioServicio.crearUsuario(nombre, direccion, telefono, email, password, password2/*, archivo*/);
             modelo.put("exito", "Te has registrado correctamente");
             return "index.html";
 
             // Evalua demás excepciones de errores en la carga de datos:
         } catch (MiExcepcion ex) {
             modelo.put("error", "Error en la carga de datos, intente de nuevo" + ex.getMessage());
-            return "formularioCliente.html";
+            return "cliente-form.html";
         } catch (DataIntegrityViolationException ex) {
             modelo.put("error", "Error en la carga de datos, intente de nuevo" + ex.getMessage());
-            return "formularioCliente.html";
+            return "cliente-form.html";
         } catch (Exception ex) {
             modelo.put("error", "Error inesperado" + ex.getMessage());
-            return "formularioCliente.html";
+            return "cliente-form.html";
         }
     }
 
-//    @GetMapping("/registrarProveedor")
+    //    @GetMapping("/registrarProveedor")
 //    public String registrarProveedor(ModelMap modelo) {
 //        List<Servicio> servicios = servicioServicios.listarServiciosActivos();
 //        modelo.addAttribute("servicios", servicios);
@@ -146,7 +148,7 @@ public class PortalControlador {
 //    public String registrarClienteProveedor(@PathVariable String id, ModelMap modelo) {
 //        List<Servicio> servicios = servicioServicios.listarServiciosActivos();
 //        modelo.addAttribute("servicios", servicios);
-//        return "formularioClienteProveedor.html";
+//        return "cliente_formProveedor.html";
 //    }
 //
 //    @PostMapping("/registroClienteProveedor/{id}")
@@ -175,29 +177,26 @@ public class PortalControlador {
 //        }
 //    }
 //
-//    @GetMapping("/redirectByRole")
-//    public String redirectByRole(HttpSession session) {
-//        Usuario logueado = (Usuario) session.getAttribute("usuariosession");
-//        if (logueado == null) {
-//            return "redirect:/login"; // Manejar caso de sesión no iniciada adecuadamente
-//        }
-//
-//        switch (logueado.getRol().toString()) {
-//            case "CLIENTE":
-//                return "redirect:/inicio";
-//            case "PROVEEDOR":
-//                return "redirect:/perfil";
-//            case "CLIENTEPROVEEDOR":
-//                return "redirect:/inicio";
-//            case "ADMIN":
-//                return "redirect:/admin/panel";
-//            case "SUPERADMIN":
-//                return "redirect:/admin/panel";
-//            default:
-//                return "redirect:/login"; // Manejar caso de roles no esperados
-//        }
-//    }
-//
+    @GetMapping("/login")
+    public String login() {
+        return "login"; // Nombre de la plantilla Thymeleaf (login.html)
+    }
+
+    @GetMapping("/redirectByRole")
+    public String redirectByRole(HttpSession session) {
+        Usuario logueado = (Usuario) session.getAttribute("usuariosession");
+        if (logueado == null) {
+            return "redirect:/login"; // Manejar caso de sesión no iniciada adecuadamente
+        }
+
+        return switch (logueado.getRol().toString()) {
+            case "CLIENTE", "COMERCIO" -> "redirect:/inicio";
+            case "EMPLEADO" -> "redirect:/perfil";
+            case "ADMIN", "SUPERADMIN" -> "redirect:/admin/panel";
+            default -> "redirect:/login"; // Manejar caso de roles no esperados
+        };
+    }
+
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_PROVEEDOR', 'ROLE_CLIENTEPROVEEDOR', 'ROLE_CLIENTE', 'ROLE_SUPERADMIN')")
 //    @GetMapping("/inicio")
 //    public String inicio(HttpSession session, ModelMap modelo) {

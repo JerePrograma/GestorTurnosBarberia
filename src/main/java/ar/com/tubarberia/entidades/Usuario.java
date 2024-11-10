@@ -1,5 +1,6 @@
 package ar.com.tubarberia.entidades;
 
+import ar.com.tubarberia.enumeraciones.Rol;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,4 +31,8 @@ public class Usuario {
 
     private Boolean activo = true;
 
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
+    private String password;
 }

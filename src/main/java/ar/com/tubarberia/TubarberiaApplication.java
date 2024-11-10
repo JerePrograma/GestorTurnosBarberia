@@ -9,5 +9,4 @@ public class TubarberiaApplication {
     public static void main(String[] args) {
         SpringApplication.run(TubarberiaApplication.class, args);
     }
-
 }

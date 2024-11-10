@@ -52,7 +52,7 @@ public class PortalControlador {
     public String index(ModelMap modelo) {
         List<Servicio> servicios = servicioServicios.listarServiciosActivos();
         modelo.addAttribute("servicios", servicios);
-        return "index.html";
+        return "templates/index.html";
     }
 
     @GetMapping("/registrarCliente")
@@ -90,7 +90,7 @@ public class PortalControlador {
             usuarioServicios.crearCliente(nombre, apellido, dni, localidad, direccion, barrio, telefono, email,
                     password, password2, archivo);
             modelo.put("exito", "Te has registrado correctamente");
-            return "index.html";
+            return "templates/index.html";
 
             // Evalua demás excepciones de errores en la carga de datos:
         } catch (MiExcepcion ex) {
@@ -155,7 +155,7 @@ public class PortalControlador {
             usuarioServicios.crearProveedor(nombre, apellido, dni, localidad, direccion, telefono, email, password,
                     password2, experiencia, descripcion, servicios);
             modelo.put("exito", "Te has registrado correctamente");
-            return "index.html";
+            return "templates/index.html";
 
             // Evalua demás excepciones de errores en la carga de datos
         } catch (MiExcepcion ex) {
@@ -454,7 +454,7 @@ public String recuperarPass() {
 public String recuperarPassPost(@RequestParam String email, ModelMap modelo, @RequestParam String password, @RequestParam String password2) throws MiExcepcion{
     try {
         usuarioServicios.recuperarPass(email, password, password2);
-        return "index.html";
+        return "templates/index.html";
     } catch (MiExcepcion e) {
         modelo.put("error", e.getMessage());
         return "redirect:/recuperarPass";
