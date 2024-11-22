@@ -1,31 +1,41 @@
 package ar.com.tubarberia.servicios;
 
-import ar.com.tubarberia.entidades.Imagen;
 import ar.com.tubarberia.entidades.Usuario;
 import ar.com.tubarberia.enumeraciones.Rol;
 import ar.com.tubarberia.excepciones.MiExcepcion;
 import ar.com.tubarberia.repositorios.UsuarioRepositorio;
-import jakarta.persistence.OneToOne;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
-public class UsuarioServicio {
+public class UsuarioServicio implements UserDetailsService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final ImagenServicio imagenServicio;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio, ImagenServicio imagenServicio) {
+    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio, ImagenServicio imagenServicio, BCryptPasswordEncoder passwordEncoder) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.imagenServicio = imagenServicio;
+        this.passwordEncoder = passwordEncoder;
     }
+
 
 //    @Autowired
 //    private CalificacionRepositorio calificacionRepositorio;
 
-    @OneToOne
-    private Imagen imagen;
     // Crear Usuarios//
     @Transactional
     public void crearUsuario(String nombre,
@@ -45,7 +55,7 @@ public class UsuarioServicio {
         usuario.setEmail(email);
         usuario.setDireccion(direccion);
 
-        usuario.setPassword(new BCryptPasswordEncoder().encode(password));
+        usuario.setPassword(passwordEncoder.encode(password));
 
         usuario.setRol(Rol.CLIENTE);
 
@@ -98,4 +108,30 @@ public class UsuarioServicio {
             throw new MiExcepcion("Las contraseñas no coinciden");
         }
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        Usuario usuario = usuarioRepositorio.buscarPorEmail(email);
+
+        if (usuario != null) {
+
+            List<GrantedAuthority> permisos = new ArrayList<>();
+
+            GrantedAuthority p = new SimpleGrantedAuthority("ROLE_" + usuario.getRol().toString());
+
+            permisos.add(p);
+
+            // Si necesitas almacenar el usuario en la sesión
+            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpSession session = attr.getRequest().getSession(true);
+            session.setAttribute("usuariosession", usuario);
+
+            return new User(usuario.getEmail(), usuario.getPassword(), permisos);
+
+        } else {
+            throw new UsernameNotFoundException("Usuario no encontrado");
+        }
+    }
+
 }

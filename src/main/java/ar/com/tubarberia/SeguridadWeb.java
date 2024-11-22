@@ -1,5 +1,7 @@
 package ar.com.tubarberia;
 
+import ar.com.tubarberia.servicios.UsuarioServicio;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SeguridadWeb {
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -22,10 +25,10 @@ public class SeguridadWeb {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/admin/").hasRole("ADMIN")
                         .requestMatchers("/proveedores/**").permitAll()
+                        .requestMatchers("/", "/login", "/registrar-cliente", "/registro-cliente").permitAll()
                         .requestMatchers("/css/", "/js/", "/img/", "/**")
                         .permitAll()
                 )
-
                 .formLogin((form) -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/logincheck")

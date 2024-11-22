@@ -4,6 +4,7 @@ import ar.com.tubarberia.entidades.Empleado;
 import ar.com.tubarberia.excepciones.MiExcepcion;
 import ar.com.tubarberia.repositorios.EmpleadoRepositorio;
 import ar.com.tubarberia.repositorios.UsuarioRepositorio;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,8 +15,8 @@ public class EmpleadoServicio extends UsuarioServicio {
 
     private final EmpleadoRepositorio empleadoRepositorio;
 
-    public EmpleadoServicio(EmpleadoRepositorio empleadoRepositorio, ImagenServicio imagenServicio, UsuarioRepositorio usuarioRepositorio) {
-        super(usuarioRepositorio, imagenServicio);
+    public EmpleadoServicio(EmpleadoRepositorio empleadoRepositorio, UsuarioRepositorio usuarioRepositorio, ImagenServicio imagenServicio, BCryptPasswordEncoder passwordEncoder) {
+        super(usuarioRepositorio, imagenServicio, passwordEncoder);
         this.empleadoRepositorio = empleadoRepositorio;
     }
 /*
