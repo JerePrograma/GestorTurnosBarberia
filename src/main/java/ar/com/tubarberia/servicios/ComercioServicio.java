@@ -7,15 +7,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.*;
 
 @Service
 public class ComercioServicio {
 
     private final ComercioRepositorio comercioRepositorio;
+    private final UsuarioServicio usuarioServicio;
 
-    public ComercioServicio(ComercioRepositorio comercioRepositorio) {
+
+    public ComercioServicio(ComercioRepositorio comercioRepositorio, UsuarioServicio usuarioServicio) {
         this.comercioRepositorio = comercioRepositorio;
+        this.usuarioServicio = usuarioServicio;
     }
 /*
     @Autowired
@@ -26,99 +31,62 @@ public class ComercioServicio {
 
     // Crear comercios y Proveedores//
     @Transactional
-    public void crearcomercio(String nombre,
-                              String CUIT,
-                              String localidad,
-                              String direccion,
-                              String barrio,
-                              String telefono,
-                              String email,
-                              String password,
-                              String password2/*,
-                              MultipartFile archivo*/) throws MiExcepcion {
+    public void crearComercio(String CUIT, String nombre, String localidad, String barrio, LocalTime horarioApertura,
+                              LocalTime horarioCierre, Set<DayOfWeek> diasAbiertos, String descripcion,
+                              String rangoPrecios, List<String> especialidades, String sitioWeb,
+                              Map<String, String> redesSociales, String politicasCancelacion, String email, String password, String password2, String telefono,
+                              String direccion) throws MiExcepcion {
 
-        validarcomercio(nombre, CUIT, localidad, direccion, barrio, telefono, email, password, password2);
-
-        Comercio comercio = new Comercio();
-
-        comercio.setNombre(nombre);
-
-        comercio.setCUIT(CUIT);
-
-        comercio.setLocalidad(localidad);
-
-        comercio.setDireccion(direccion);
-
-        comercio.setTelefono(telefono);
-
-        comercio.setEmail(email);
-
-/*        comercio.setPassword(new BCryptPasswordEncoder().encode(password));
-
-        comercio.setRol(Rol.comercio);*/
-
-/*        if (archivo != null && !archivo.isEmpty()) {
-            try {
-                Imagen imagen = imagenServicios.guardarImagen(archivo);
-                comercio.setImagen(imagen);
-            } catch (MiExcepcion e) {
-                throw new MiExcepcion("Error al guardar la imagen: " + e.getMessage());
-            }
-        } else {
-            throw new MiExcepcion("El archivo no puede estar nulo o vacío");
-        }*/
-
-
-        comercio.setActivo(true);
-
+        usuarioServicio.validarUsuario(nombre, direccion, telefono, email, password, password2);
+        Comercio comercio = usuarioServicio.crearComercio(CUIT, nombre, localidad, barrio, horarioApertura, horarioCierre, diasAbiertos, descripcion, rangoPrecios, especialidades, sitioWeb, redesSociales, politicasCancelacion, email, password, telefono, direccion);
         comercioRepositorio.save(comercio);
     }
 
     // Modificar comercio//
 
-    @Transactional
-    public void modificarcomercio(String nombre, String CUIT,
-                                  String localidad, String direccion,
-                                  String barrio, String telefono, String email,
-                                  String password, String password2,
-                                  /*MultipartFile archivo,*/
-                                  Long id) throws MiExcepcion {
-
-        validarcomercio(nombre, CUIT, localidad, direccion, barrio, telefono, email, password, password2);
-
-        Optional<Comercio> respuesta = comercioRepositorio.findById(id);
-
-        if (respuesta.isPresent()) {
-
-            Comercio comercio = respuesta.get();
-
-            comercio.setNombre(nombre);
-
-            comercio.setCUIT(CUIT);
-
-            comercio.setLocalidad(localidad);
-
-            comercio.setDireccion(direccion);
-
-            comercio.setTelefono(telefono);
-
-            comercio.setEmail(email);
-//            comercio.setPassword(new BCryptPasswordEncoder().encode(password));
-
-            // String idImagen = null;
-
-            // if(comercio.getImagen() != null){
-            // idImagen = comercio.getImagen().getId();
-
-            // }
-
-            // Imagen imagen = imagenServicios.actualizarImagen(archivo, idImagen);
-
-            // comercio.setImagen(imagen);
-
-            comercioRepositorio.save(comercio);
-        }
-    }
+//    @Transactional
+//    public void modificarcomercio(String nombre, String CUIT,
+//                                  String localidad, String direccion,
+//                                  String barrio, String telefono, String email,
+//                                  String password, String password2,
+//            /*MultipartFile archivo,*/
+//                                  Long id) throws MiExcepcion {
+//
+//        validarcomercio(nombre, CUIT, localidad, direccion, barrio, telefono, email, password, password2);
+//
+//        Optional<Comercio> respuesta = comercioRepositorio.findById(id);
+//
+//        if (respuesta.isPresent()) {
+//
+//            Comercio comercio = respuesta.get();
+//
+//            comercio.setNombre(nombre);
+//
+//            comercio.setCUIT(CUIT);
+//
+//            comercio.setLocalidad(localidad);
+//
+//            comercio.setDireccion(direccion);
+//
+//            comercio.setTelefono(telefono);
+//
+//            comercio.setEmail(email);
+////            comercio.setPassword(new BCryptPasswordEncoder().encode(password));
+//
+//            // String idImagen = null;
+//
+//            // if(comercio.getImagen() != null){
+//            // idImagen = comercio.getImagen().getId();
+//
+//            // }
+//
+//            // Imagen imagen = imagenServicios.actualizarImagen(archivo, idImagen);
+//
+//            // comercio.setImagen(imagen);
+//
+//            comercioRepositorio.save(comercio);
+//        }
+//    }
 
     /*// obtener promedio
     public String obtenerPromedioCalificaciones(Comercio proveedor) throws MiExcepcion {
@@ -167,109 +135,106 @@ public class ComercioServicio {
         }
 
     }
-
-    // Listar Comercios//
-    @Transactional(readOnly = true)
-    public List<Comercio> listarTodos() {
-        List<Comercio> Comercios = ComercioRepositorio.findAll();
-        return Comercios;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Comercio> listarcomercios() {
-        List<Comercio> comercios = ComercioRepositorio.buscarPorRol(Rol.comercio);
-        return comercios;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Comercio> listarProveedores() {
-        List<Comercio> proveedores = ComercioRepositorio.buscarPorRol(Rol.PROVEEDOR);
-        return proveedores;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Comercio> listarcomercioProveedores() {
-        List<Comercio> comercioproveedores = ComercioRepositorio.buscarPorRol(Rol.comercioPROVEEDOR);
-        return comercioproveedores;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Comercio> listarcomerciosProveedores() {
-        List<Comercio> comerciosProveedores = ComercioRepositorio.buscarPorRol(Rol.comercioPROVEEDOR);
-        return comerciosProveedores;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Comercio> listarPorServicio(String servicio) {
-
-        List<Comercio> proveedores = ComercioRepositorio.buscarProveedoresPorIdServicio(servicio);
-
-        return proveedores;
-
-    }
-
-    // Buscar Comercio//
-
-    @Transactional(readOnly = true)
-    public Comercio buscarComercio(String id) throws MiExcepcion {
-        Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
-        if (Comercio.isEmpty()) {
-            throw new MiExcepcion("No existe el Comercio");
-        }
-        return Comercio.get();
-    }
-
-    // Activar o Desactivar Comercio//
-    @Transactional
-    public void desactivarComercio(String id) throws MiExcepcion {
-        Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
-        if (Comercio.isEmpty()) {
-            throw new MiExcepcion("No existe el Comercio");
-        }
-        Comercio.get().setEstado(false);
-        ComercioRepositorio.save(Comercio.get());
-    }
-
-    @Transactional
-    public void activarComercio(String id) throws MiExcepcion {
-        Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
-        if (Comercio.isEmpty()) {
-            throw new MiExcepcion("No existe el Comercio");
-        }
-        Comercio.get().setEstado(true);
-        ComercioRepositorio.save(Comercio.get());
-    }
 */
-    public void validarcomercio(String nombre,
-                                String CUIT,
-                                String localidad,
-                                String direccion,
-                                String barrio,
-                                String telefono,
-                                String email,
-                                String password,
-                                String password2)
-            throws MiExcepcion {
+    // Listar Comercios
+    @Transactional(readOnly = true)
+    public List<Comercio> listarComercios() {
+        return comercioRepositorio.findAll();
+    }
 
-        if (nombre.isEmpty()) {
-            throw new MiExcepcion("El nombre no puede estar vacio");
+    /*
+        @Transactional(readOnly = true)
+        public List<Comercio> listarcomercios() {
+            List<Comercio> comercios = ComercioRepositorio.buscarPorRol(Rol.comercio);
+            return comercios;
         }
 
-        if (CUIT == null) {
-            throw new MiExcepcion("El CUIT no puede estar vacio");
+        @Transactional(readOnly = true)
+        public List<Comercio> listarProveedores() {
+            List<Comercio> proveedores = ComercioRepositorio.buscarPorRol(Rol.PROVEEDOR);
+            return proveedores;
         }
 
-        if (localidad.isEmpty()) {
-            throw new MiExcepcion("La localidad no puede estar vacia");
+        @Transactional(readOnly = true)
+        public List<Comercio> listarcomercioProveedores() {
+            List<Comercio> comercioproveedores = ComercioRepositorio.buscarPorRol(Rol.comercioPROVEEDOR);
+            return comercioproveedores;
         }
 
-        if (direccion.isEmpty()) {
-            throw new MiExcepcion("La direccion no puede estar vacia");
+        @Transactional(readOnly = true)
+        public List<Comercio> listarcomerciosProveedores() {
+            List<Comercio> comerciosProveedores = ComercioRepositorio.buscarPorRol(Rol.comercioPROVEEDOR);
+            return comerciosProveedores;
         }
 
-        if (barrio.isEmpty()) {
-            throw new MiExcepcion("El barrio no puede estar vacio");
+        @Transactional(readOnly = true)
+        public List<Comercio> listarPorServicio(String servicio) {
+
+            List<Comercio> proveedores = ComercioRepositorio.buscarProveedoresPorIdServicio(servicio);
+
+            return proveedores;
+
         }
+
+        // Buscar Comercio//
+
+        @Transactional(readOnly = true)
+        public Comercio buscarComercio(String id) throws MiExcepcion {
+            Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
+            if (Comercio.isEmpty()) {
+                throw new MiExcepcion("No existe el Comercio");
+            }
+            return Comercio.get();
+        }
+
+        // Activar o Desactivar Comercio//
+        @Transactional
+        public void desactivarComercio(String id) throws MiExcepcion {
+            Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
+            if (Comercio.isEmpty()) {
+                throw new MiExcepcion("No existe el Comercio");
+            }
+            Comercio.get().setEstado(false);
+            ComercioRepositorio.save(Comercio.get());
+        }
+
+        @Transactional
+        public void activarComercio(String id) throws MiExcepcion {
+            Optional<Comercio> Comercio = ComercioRepositorio.findById(id);
+            if (Comercio.isEmpty()) {
+                throw new MiExcepcion("No existe el Comercio");
+            }
+            Comercio.get().setEstado(true);
+            ComercioRepositorio.save(Comercio.get());
+        }
+    */
+    private void validarComercio(String CUIT, String nombre, String localidad, String barrio, LocalTime horarioApertura,
+                                 LocalTime horarioCierre, Set<DayOfWeek> diasAbiertos, String descripcion,
+                                 String rangoPrecios, List<String> especialidades, String sitioWeb,
+                                 Map<String, String> redesSociales, String politicasCancelacion) throws MiExcepcion {
+
+        if (CUIT == null || CUIT.isEmpty()) {
+            throw new MiExcepcion("El CUIT no puede estar vacío");
+        }
+        if (comercioRepositorio.existsByCUIT(CUIT)) {
+            throw new MiExcepcion("El CUIT ya está registrado");
+        }
+        if (localidad == null || localidad.isEmpty()) {
+            throw new MiExcepcion("La localidad no puede estar vacía");
+        }
+        if (barrio == null || barrio.isEmpty()) {
+            throw new MiExcepcion("El barrio no puede estar vacío");
+        }
+        if (horarioApertura == null) {
+            throw new MiExcepcion("El horario de apertura no puede estar vacío");
+        }
+        if (horarioCierre == null) {
+            throw new MiExcepcion("El horario de cierre no puede estar vacío");
+        }
+        if (diasAbiertos == null || diasAbiertos.isEmpty()) {
+            throw new MiExcepcion("Debe seleccionar al menos un día de apertura");
+        }
+        // Agrega más validaciones según tus necesidades
     }
 
     /* @Override

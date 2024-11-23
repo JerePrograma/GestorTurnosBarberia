@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ComercioRepositorio extends JpaRepository<Comercio, Long> {
 
+    boolean existsByCUIT(String cuit);
+
 }

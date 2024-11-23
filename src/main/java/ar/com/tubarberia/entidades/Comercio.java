@@ -53,4 +53,5 @@ public class Comercio extends Usuario {
     private Double calificacionPromedio;
 
     private String politicasCancelacion;
+
 }

@@ -1,9 +1,14 @@
 package ar.com.tubarberia.servicios;
 
+import ar.com.tubarberia.entidades.Comercio;
 import ar.com.tubarberia.entidades.Empleado;
+import ar.com.tubarberia.entidades.Usuario;
+import ar.com.tubarberia.enumeraciones.Rol;
 import ar.com.tubarberia.excepciones.MiExcepcion;
+import ar.com.tubarberia.repositorios.ComercioRepositorio;
 import ar.com.tubarberia.repositorios.EmpleadoRepositorio;
 import ar.com.tubarberia.repositorios.UsuarioRepositorio;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,14 +16,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
 
 @Service
-public class EmpleadoServicio extends UsuarioServicio {
+public class EmpleadoServicio {
 
     private final EmpleadoRepositorio empleadoRepositorio;
+    private final UsuarioServicio usuarioServicio;
+    private final ComercioRepositorio comercioRepositorio;
 
-    public EmpleadoServicio(EmpleadoRepositorio empleadoRepositorio, UsuarioRepositorio usuarioRepositorio, ImagenServicio imagenServicio, BCryptPasswordEncoder passwordEncoder) {
-        super(usuarioRepositorio, imagenServicio, passwordEncoder);
+    public EmpleadoServicio(EmpleadoRepositorio empleadoRepositorio, UsuarioServicio usuarioServicio, ComercioRepositorio comercioRepositorio) {
         this.empleadoRepositorio = empleadoRepositorio;
+        this.usuarioServicio = usuarioServicio;
+        this.comercioRepositorio = comercioRepositorio;
     }
+
 /*
     @Autowired
     private ImagenServicio imagenServicio;
@@ -28,27 +37,21 @@ public class EmpleadoServicio extends UsuarioServicio {
 
     // Crear Empleados//
     public void crearEmpleado(String nombre,
-                              String direccion,
-                              String telefono,
                               String email,
                               String password,
                               String password2,
-                              MultipartFile archivo,
-                              String puesto) throws MiExcepcion {
-        validarUsuario(nombre, direccion, telefono, email, password, password2);
-        //        validarEmpleado(puesto);
-
-        Empleado empleado = new Empleado();
-
-        empleado.setPuesto(puesto);
-
-        empleado.setFechaContratacion(new Date());
-
-//      empleado.setSalario(salario);
-
-//      empleado.setRol(Rol.Empleado);
-
-        empleado.setActivo(true);
+                              String telefono,
+                              String direccion,
+                              String puesto,
+                              Long comercioId,
+                              Date fechaContratacion
+            /*MultipartFile archivo*/) throws MiExcepcion {
+        usuarioServicio.validarUsuario(nombre, direccion, telefono, email, password, password2);
+        validarEmpleado(puesto, comercioId, fechaContratacion);
+        Empleado empleado = usuarioServicio.crearEmpleado(nombre, email, password, password2, telefono, direccion, puesto, comercioId, fechaContratacion);
+        Comercio comercio = comercioRepositorio.findById(comercioId)
+                .orElseThrow(() -> new MiExcepcion("Comercio no encontrado"));
+        empleado.setComercio(comercio);
 
         empleadoRepositorio.save(empleado);
     }
@@ -223,10 +226,16 @@ public class EmpleadoServicio extends UsuarioServicio {
         EmpleadoRepositorio.save(Empleado.get());
     }
 */
-    public void validarEmpleado(
-
-    )
-            throws MiExcepcion {
-
+    private void validarEmpleado(String puesto, Long comercioId, Date fechaContratacion) throws MiExcepcion {
+        if (puesto == null || puesto.isEmpty()) {
+            throw new MiExcepcion("El puesto no puede estar vacío");
+        }
+        if (comercioId == null) {
+            throw new MiExcepcion("Debe seleccionar un comercio");
+        }
+        if (fechaContratacion == null) {
+            throw new MiExcepcion("La fecha de contratación no puede estar vacía");
+        }
+        // Puedes agregar más validaciones según necesites
     }
 }
