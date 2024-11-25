@@ -29,7 +29,7 @@ class TubarberiaApplicationTests {
         usuario.setDireccion("Calle Falsa 123");
         usuario.setPassword("password123");
         usuario.setRol(Rol.CLIENTE);
-        usuario.setActivo(true);
+        usuario.setEstado(true);
 
         usuarioRepositorio.save(usuario);
 

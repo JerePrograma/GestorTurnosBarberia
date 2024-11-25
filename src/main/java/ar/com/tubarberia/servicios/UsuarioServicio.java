@@ -1,13 +1,12 @@
 package ar.com.tubarberia.servicios;
 
-import ar.com.tubarberia.entidades.Comercio;
 import ar.com.tubarberia.entidades.Empleado;
 import ar.com.tubarberia.entidades.Usuario;
 import ar.com.tubarberia.enumeraciones.Rol;
 import ar.com.tubarberia.excepciones.MiExcepcion;
+import ar.com.tubarberia.repositorios.EmpleadoRepositorio;
 import ar.com.tubarberia.repositorios.UsuarioRepositorio;
 import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,22 +20,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.*;
 
 @Service
 public class UsuarioServicio implements UserDetailsService {
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioServicio.class);
+    static {
+        LoggerFactory.getLogger(UsuarioServicio.class);
+    }
 
     private final UsuarioRepositorio usuarioRepositorio;
-    private final ImagenServicio imagenServicio;
+    //   private final ImagenServicio imagenServicio;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final EmpleadoRepositorio empleadoRepositorio;
 
-    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio, ImagenServicio imagenServicio, BCryptPasswordEncoder passwordEncoder) {
+    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio/*, ImagenServicio imagenServicio*/, BCryptPasswordEncoder passwordEncoder, EmpleadoRepositorio empleadoRepositorio) {
         this.usuarioRepositorio = usuarioRepositorio;
-        this.imagenServicio = imagenServicio;
+        //     this.imagenServicio = imagenServicio;
         this.passwordEncoder = passwordEncoder;
+        this.empleadoRepositorio = empleadoRepositorio;
     }
 
 
@@ -46,12 +47,12 @@ public class UsuarioServicio implements UserDetailsService {
     // Crear Usuarios//
     @Transactional
     public void crearUsuario(String nombre,
-                              String direccion,
-                              String telefono,
-                              String email,
-                              String password,
-                              String password2
-                              /*, MultipartFile archivo*/) throws MiExcepcion {
+                             String direccion,
+                             String telefono,
+                             String email,
+                             String password,
+                             String password2
+            /*, MultipartFile archivo*/) throws MiExcepcion {
 
         validarUsuario(nombre, direccion, telefono, email, password, password2);
 
@@ -78,15 +79,16 @@ public class UsuarioServicio implements UserDetailsService {
 //        }
 
 
-        usuario.setActivo(true);
+        usuario.setEstado(true);
 
         usuarioRepositorio.save(usuario);
     }
+
     // Crear Empleados//
     @Transactional
     public Empleado crearEmpleado(String nombre, String email, String password, String password2, String telefono,
-                              String direccion, String puesto, Long comercioId, Date fechaContratacion) throws MiExcepcion {
-
+                                  String direccion, String puesto, /*Long comercioId, */Date fechaContratacion) throws MiExcepcion {
+        validarUsuario(nombre, direccion, telefono, email, password, password2);
         Empleado empleado = new Empleado();
         empleado.setNombre(nombre);
         empleado.setEmail(email);
@@ -96,47 +98,167 @@ public class UsuarioServicio implements UserDetailsService {
         empleado.setPuesto(puesto);
         empleado.setFechaContratacion(fechaContratacion);
         empleado.setRol(Rol.EMPLEADO);
-        empleado.setActivo(true);
+        empleado.setEstado(true);
 
         return empleado;
     }
 
     @Transactional
-    public Comercio crearComercio(String CUIT, String nombre, String localidad, String barrio, LocalTime horarioApertura,
-                                  LocalTime horarioCierre, Set<DayOfWeek> diasAbiertos, String descripcion,
-                                  String rangoPrecios, List<String> especialidades, String sitioWeb,
-                                  Map<String, String> redesSociales, String politicasCancelacion, String email, String password, String telefono,
-                                  String direccion) throws MiExcepcion {
+    public void modificarUsuario(Long id,
+                                 String nombre,
+                                 String direccion,
+                                 String telefono,
+                                 String email,
+                                 String password,
+                                 String password2
+            /*, MultipartFile archivo*/) throws MiExcepcion {
 
-        Comercio comercio = new Comercio();
-        comercio.setCUIT(CUIT);
-        comercio.setNombre(nombre);
-        comercio.setEmail(email);
-        comercio.setPassword(passwordEncoder.encode(password));
-        comercio.setRol(Rol.COMERCIO);
-        comercio.setTelefono(telefono);
-        comercio.setDireccion(direccion);
-        comercio.setLocalidad(localidad);
-        comercio.setBarrio(barrio);
-        comercio.setHorarioApertura(horarioApertura);
-        comercio.setHorarioCierre(horarioCierre);
-        comercio.setDiasAbiertos(diasAbiertos);
-        comercio.setDescripcion(descripcion);
-        comercio.setRangoPrecios(rangoPrecios);
-        comercio.setEspecialidades(especialidades);
-        comercio.setSitioWeb(sitioWeb);
-        comercio.setRedesSociales(redesSociales);
-        comercio.setPoliticasCancelacion(politicasCancelacion);
-        comercio.setCalificacionPromedio(0.0); // Inicialmente en 0
-        return comercio;
+        validarUsuario(nombre, direccion, telefono, email, password, password2);
+
+        Optional<Usuario> respuesta = usuarioRepositorio.findById(id);
+
+        if (respuesta.isPresent()) {
+
+            Usuario usuario = respuesta.get();
+
+            usuario.setNombre(nombre);
+            usuario.setTelefono(telefono);
+            usuario.setEmail(email);
+            usuario.setDireccion(direccion);
+
+            usuario.setPassword(passwordEncoder.encode(password));
+
+            // String idImagen = null;
+
+            // if(usuario.getImagen() != null){
+            // idImagen = usuario.getImagen().getId();
+
+            // }
+
+            // Imagen imagen = imagenServicios.actualizarImagen(archivo, idImagen);
+
+            // usuario.setImagen(imagen);
+
+            usuarioRepositorio.save(usuario);
+        }
+    }
+
+    @Transactional
+    public void modificarEmpleado(Long id, String nombre, String email, String password, String password2, String telefono,
+                                  String direccion, String puesto,/* Long comercioId,*/ Date fechaContratacion
+            /*, MultipartFile archivo*/) throws MiExcepcion {
+        modificarUsuario(id, nombre, direccion, telefono, email, password, password2);
+
+        Optional<Empleado> respuesta = empleadoRepositorio.findById(id);
+
+        if (respuesta.isPresent()) {
+
+            Empleado empleado = respuesta.get();
+
+            empleado.setTelefono(telefono);
+            empleado.setDireccion(direccion);
+            empleado.setPuesto(puesto);
+            empleado.setFechaContratacion(fechaContratacion);
+            empleado.setRol(Rol.EMPLEADO);
+            empleado.setEstado(true);
+
+            // String idImagen = null;
+
+            // if(empleado.getImagen() != null){
+            // idImagen = empleado.getImagen().getId();
+
+            // }
+
+            // Imagen imagen = imagenServicios.actualizarImagen(archivo, idImagen);
+
+            // empleado.setImagen(imagen);
+
+            empleadoRepositorio.save(empleado);
+        }
+    }
+
+//    @Transactional
+//    public void actualizarImagenUsuario(String usuarioId, MultipartFile archivo) throws MiExcepcion {
+//
+//        Optional<Usuario> respuesta = usuarioRepositorio.findById(usuarioId);
+//        if (respuesta.isPresent()) {
+//            Usuario usuario = respuesta.get();
+//            String idImagen = null;
+//
+//            if (usuario.getImagen() != null) {
+//                idImagen = usuario.getImagen().getId();
+//                Imagen imagen = imagenServicios.actualizarImagen(archivo, idImagen);
+//                usuario.setImagen(imagen);
+//            } else {
+//                Imagen imagen = imagenServicios.guardarImagen(archivo);
+//                usuario.setImagen(imagen);
+//            }
+//
+//            usuarioRepositorio.save(usuario);
+//        }
+//
+//    }
+
+    // Listar Usuarios//
+    @Transactional(readOnly = true)
+    public List<Usuario> listarTodos() {
+        return usuarioRepositorio.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Empleado> listarEmpleados() {
+        return empleadoRepositorio.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Usuario buscarUsuario(Long id) throws MiExcepcion {
+        Optional<Usuario> usuario = usuarioRepositorio.findById(id);
+        if (usuario.isEmpty()) {
+            throw new MiExcepcion("No existe el usuario");
+        }
+        return usuario.get();
+    }
+
+    // Activar o Desactivar Usuario//
+    @Transactional
+    public void cambiarEstadoUsuario(Long id) throws MiExcepcion {
+        Optional<Usuario> respuesta = usuarioRepositorio.findById(id);
+        if (respuesta.isEmpty()) {
+            throw new MiExcepcion("No existe el usuario");
+        }
+        Usuario usuario = respuesta.get();
+        usuario.setEstado(!usuario.getEstado());
+        usuarioRepositorio.save(usuario);
+    }
+
+    // Activar o Desactivar Empleado//
+    @Transactional
+    public void cambiarEstadoEmpleado(Long id) throws MiExcepcion {
+        Optional<Empleado> respuesta = empleadoRepositorio.findById(id);
+        if (respuesta.isEmpty()) {
+            throw new MiExcepcion("No existe el empleado");
+        }
+        Empleado empleado = respuesta.get();
+        empleado.setEstado(!empleado.getEstado());
+        empleadoRepositorio.save(empleado);
+    }
+
+    //Buscar usuario en base de datos para validar por mail que no exista y crear usuario
+    public boolean existeUsuarioPorEmail(String email) {
+        return usuarioRepositorio.existsByEmail(email);
+    }
+
+    //Buscar usuario en base de datos para validar por dni que no exista y crear usuario
+    public boolean existeUsuarioPorDni(Integer dni) {
+        return usuarioRepositorio.existsByDni(dni);
     }
 
     public void validarUsuario(String nombre,
-                                String direccion,
-                                String telefono,
-                                String email,
-                                String password,
-                                String password2)
+                               String direccion,
+                               String telefono,
+                               String email,
+                               String password,
+                               String password2)
             throws MiExcepcion {
 
         if (nombre.isEmpty()) {

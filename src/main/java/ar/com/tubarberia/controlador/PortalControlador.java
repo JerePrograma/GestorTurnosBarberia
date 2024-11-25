@@ -28,12 +28,12 @@ public class PortalControlador {
         return "index.html";
     }
 
-    @GetMapping("/registrar-cliente")
+    @GetMapping("/usuario/registrar")
     public String registrarCliente() {
-        return "cliente-form.html";
+        return "usuario-form.html";
     }
 
-    @PostMapping("/registro-cliente")
+    @PostMapping("/usuario/registro")
     public String registrarCliente(@RequestParam String nombre,
                                    @RequestParam String direccion,
                                    @RequestParam String telefono,
@@ -46,13 +46,13 @@ public class PortalControlador {
 //            // Verificar si el cliente ya está registrado con el email
 //            if (usuarioServicio.existeClientePorEmail(email)) {
 //                modelo.put("error", "El email ya está registrado.");
-//                return "cliente-form.html";
+//                return "usuario-form.html";
 //            }
 //
 //            // Verificar si el cliente ya está registrado con el DNI
 //            if (usuarioServicio.existeClientePorDni(dni)) {
 //                modelo.put("error", "El DNI ya está registrado.");
-//                return "cliente-form.html";
+//                return "usuario-form.html";
 //            }
 
             // Crear el cliente si no está registrado
@@ -63,13 +63,13 @@ public class PortalControlador {
             // Evalua demás excepciones de errores en la carga de datos:
         } catch (MiExcepcion ex) {
             modelo.put("error", "Error en la carga de datos, intente de nuevo" + ex.getMessage());
-            return "cliente-form.html";
+            return "usuario-form.html";
         } catch (DataIntegrityViolationException ex) {
             modelo.put("error", "Error en la carga de datos, intente de nuevo" + ex.getMessage());
-            return "cliente-form.html";
+            return "usuario-form.html";
         } catch (Exception ex) {
             modelo.put("error", "Error inesperado" + ex.getMessage());
-            return "cliente-form.html";
+            return "usuario-form.html";
         }
     }
 

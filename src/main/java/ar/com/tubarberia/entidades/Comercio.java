@@ -1,5 +1,6 @@
 package ar.com.tubarberia.entidades;
 
+import ar.com.tubarberia.enumeraciones.Rol;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,12 +11,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comercio extends Usuario {
+public class Comercio {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;;
+
+    private String nombre;
+
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
+
+    private String telefono;
+
+    private String direccion;
+
+    @OneToOne
+    private Imagen imagen;
+
+    private Boolean activo = true;
+
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
 
     @Column(unique = true, nullable = false)
     private String CUIT;

@@ -29,7 +29,7 @@ public class Usuario {
     @OneToOne
     private Imagen imagen;
 
-    private Boolean activo = true;
+    private Boolean estado = true;
 
     @Enumerated(EnumType.STRING)
     private Rol rol;

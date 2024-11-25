@@ -1,6 +1,7 @@
 package ar.com.tubarberia.servicios;
 
 import ar.com.tubarberia.entidades.Comercio;
+import ar.com.tubarberia.enumeraciones.Rol;
 import ar.com.tubarberia.excepciones.MiExcepcion;
 import ar.com.tubarberia.repositorios.ComercioRepositorio;
 import org.springframework.stereotype.Service;
@@ -34,11 +35,31 @@ public class ComercioServicio {
     public void crearComercio(String CUIT, String nombre, String localidad, String barrio, LocalTime horarioApertura,
                               LocalTime horarioCierre, Set<DayOfWeek> diasAbiertos, String descripcion,
                               String rangoPrecios, List<String> especialidades, String sitioWeb,
-                              Map<String, String> redesSociales, String politicasCancelacion, String email, String password, String password2, String telefono,
+                              Map<String, String> redesSociales, String politicasCancelacion, String email, String telefono,
                               String direccion) throws MiExcepcion {
-
-        usuarioServicio.validarUsuario(nombre, direccion, telefono, email, password, password2);
-        Comercio comercio = usuarioServicio.crearComercio(CUIT, nombre, localidad, barrio, horarioApertura, horarioCierre, diasAbiertos, descripcion, rangoPrecios, especialidades, sitioWeb, redesSociales, politicasCancelacion, email, password, telefono, direccion);
+        Comercio comercio = new Comercio();
+        comercio.setNombre(nombre);
+        comercio.setTelefono(telefono);
+        comercio.setEmail(email);
+        comercio.setDireccion(direccion);
+        comercio.setCUIT(CUIT);
+        comercio.setNombre(nombre);
+        comercio.setEmail(email);
+        comercio.setRol(Rol.COMERCIO);
+        comercio.setTelefono(telefono);
+        comercio.setDireccion(direccion);
+        comercio.setLocalidad(localidad);
+        comercio.setBarrio(barrio);
+        comercio.setHorarioApertura(horarioApertura);
+        comercio.setHorarioCierre(horarioCierre);
+        comercio.setDiasAbiertos(diasAbiertos);
+        comercio.setDescripcion(descripcion);
+        comercio.setRangoPrecios(rangoPrecios);
+        comercio.setEspecialidades(especialidades);
+        comercio.setSitioWeb(sitioWeb);
+        comercio.setRedesSociales(redesSociales);
+        comercio.setPoliticasCancelacion(politicasCancelacion);
+        comercio.setCalificacionPromedio(0.0); // Inicialmente en 0
         comercioRepositorio.save(comercio);
     }
 

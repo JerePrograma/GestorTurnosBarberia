@@ -31,8 +31,6 @@ public class ComercioControlador {
             @RequestParam("direccion") String direccion,
             @RequestParam("telefono") String telefono,
             @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam("password2") String password2,
             @RequestParam("nombre") String nombre,
             @RequestParam("localidad") String localidad,
             @RequestParam("barrio") String barrio,
@@ -59,7 +57,7 @@ public class ComercioControlador {
             comercioServicio.crearComercio(CUIT, nombre, localidad, barrio, horarioApertura,
                     horarioCierre, diasAbiertosSet, descripcion,
                     rangoPrecios, especialidades, sitioWeb,
-                    redesSociales, politicasCancelacion, email, password, password2, telefono,
+                    redesSociales, politicasCancelacion, email, telefono,
                     direccion);
 
             return "redirect:/comercios/lista"; // Redirige a la lista de comercios o a donde desees

@@ -2,16 +2,10 @@ package ar.com.tubarberia.servicios;
 
 import ar.com.tubarberia.entidades.Comercio;
 import ar.com.tubarberia.entidades.Empleado;
-import ar.com.tubarberia.entidades.Usuario;
-import ar.com.tubarberia.enumeraciones.Rol;
 import ar.com.tubarberia.excepciones.MiExcepcion;
 import ar.com.tubarberia.repositorios.ComercioRepositorio;
 import ar.com.tubarberia.repositorios.EmpleadoRepositorio;
-import ar.com.tubarberia.repositorios.UsuarioRepositorio;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -48,7 +42,7 @@ public class EmpleadoServicio {
             /*MultipartFile archivo*/) throws MiExcepcion {
         usuarioServicio.validarUsuario(nombre, direccion, telefono, email, password, password2);
         validarEmpleado(puesto, comercioId, fechaContratacion);
-        Empleado empleado = usuarioServicio.crearEmpleado(nombre, email, password, password2, telefono, direccion, puesto, comercioId, fechaContratacion);
+        Empleado empleado = usuarioServicio.crearEmpleado(nombre, email, password, password2, telefono, direccion, puesto, /*comercioId, */fechaContratacion);
         Comercio comercio = comercioRepositorio.findById(comercioId)
                 .orElseThrow(() -> new MiExcepcion("Comercio no encontrado"));
         empleado.setComercio(comercio);
